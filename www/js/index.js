@@ -1,42 +1,67 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 var app = {
-    // Application Constructor
-    initialize: function() {
-        this.bindEvents();
-    },
-    // Bind Event Listeners
-    //
-    // Bind any events that are required on startup. Common events are:
-    // 'load', 'deviceready', 'offline', and 'online'.
-    bindEvents: function() {
-        document.addEventListener('deviceready', this.onDeviceReady, false);
-    },
-    // deviceready Event Handler
-    //
-    // The scope of 'this' is the event. In order to call the 'receivedEvent'
-    // function, we must explicity call 'app.receivedEvent(...);'
-    onDeviceReady: function() {
-        app.receivedEvent('deviceready');
-    },
-    // Update DOM on a Received Event
-    receivedEvent: function(id) {
+    app : this,
+    initialize : function () {
+        var jqmReady = $.Deferred();
+        var pgReady = $.Deferred();
 
+        document.addEventListener('deviceready', function () {
+            pgReady.resolve();
+        }, false);
+        $(document).on("pageinit", function () {
+            jqmReady.resolve();
+        });
+
+        $.when(jqmReady, pgReady).then(function () {
+            var places = localStorage.getItem("myPlaces");
+            if (!places) {
+                places = "";
+                localStorage.setItem("myPlaces", JSON.stringify(places));
+            }
+            places = JSON.parse(places);
+            for (var i = 0; i < places.length; i++) {
+                app.addPlaceListItem(places[i]);
+            }
+        });
+    },
+
+    addPlaceListItem : function (place) {
+        var list = document.getElementById("myPlaces");
+        var li = document.createElement("li");
+        list.appendChild(li);
+        li.outerHTML = Handlebars.templates.placeListItem(place);
+        $("#myPlaces").listview("refresh");
+
+    },
+
+    addPlace : function (place) {
+        var places = JSON.parse(localStorage.getItem("myPlaces"));
+        places.push(place);
+        this.addPlaceListItem(place);
+        localStorage.setItem("myPlaces", JSON.stringify(places));
+    },
+
+    submitPlaceForm : function () {
+        var place = {
+            name : $("#placeName").val(),
+            date : $("#date").val(),
+            friends : $("#friends").val()
+        };
+        if (place.name) {
+            this.addPlace(place);
+            $.mobile.changePage("#main");
+        }
+        else {
+            navigator.notification.alert("Name cannot be blank", null, "Invalid name", "Ok");
+        }
+    },
+
+    clearPlaceForm : function () {
+        $("#placeName").val("");
+        $("#date").val("");
+        $("#friends").text("");
+        $.mobile.changePage("#main");
     }
+
 };
+
+app.initialize();
