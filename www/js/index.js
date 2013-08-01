@@ -3,6 +3,7 @@ var app = {
     initialize : function () {
         var jqmReady = $.Deferred();
         var pgReady = $.Deferred();
+        this.api = apiLocal;
 
         document.addEventListener('deviceready', function () {
             pgReady.resolve();
@@ -12,16 +13,10 @@ var app = {
         });
 
         $.when(jqmReady, pgReady).then(function () {
-            var places;
-            var placesStr = localStorage.getItem("myPlaces");
-            if (!placesStr || !((places = JSON.parse(placesStr)) instanceof Array)) {
-                places = [];
-                localStorage.setItem("myPlaces", JSON.stringify(places));
+            app.places = app.api.getPlaces();
+            for (var id in app.places) {
+                app.addPlaceListItem(app.places[id]);
             }
-            for (var i = 0; i < places.length; i++) {
-                app.addPlaceListItem(places[i]);
-            }
-
             navigator.contacts.find(["name"], app.retrievedContacts, app.logError, {multiple : true});
 
             $("#date").val(app.getToday());
@@ -30,26 +25,20 @@ var app = {
 
     retrievedContacts : function (contacts) {
         this.contacts = contacts;
-    },
-    
-    addFriend : function(contact){
-        $("#listFriends").append("<li><h1>" + contact.name + "</h1><a data-icon='delete'></a></li>");
+        for (var i = 0; i < this.contacts.length; i++) {
+            $("#listFriends").append("<li><h1>" + this.contacts[i].displayName + "</h1><a data-icon='delete'></a></li>");
+        }
     },
 
     addPlaceListItem : function (place) {
-        var list = document.getElementById("myPlaces");
-        var li = document.createElement("li");
-        list.appendChild(li);
-        li.outerHTML = Handlebars.templates.placeListItem(place);
+        $("#myPlaces").append(Handlebars.templates.placeListItem(place));
         $("#myPlaces").listview("refresh");
-
     },
 
     addPlace : function (place) {
-        var places = JSON.parse(localStorage.getItem("myPlaces"));
-        places.push(place);
+        var id = this.api.insertPlace(place);
+        this.places[id] = place;
         this.addPlaceListItem(place);
-        localStorage.setItem("myPlaces", JSON.stringify(places));
     },
 
     submitPlaceForm : function () {
@@ -70,7 +59,6 @@ var app = {
     clearPlaceForm : function () {
         $("#placeName").val("");
         $("#date").val(app.getToday());
-        $("#friends").text("");
         $.mobile.changePage("#main");
     },
 
