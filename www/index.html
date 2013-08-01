@@ -24,16 +24,20 @@
         <h1>Where'd We Eat?</h1>
     </div>
     <div data-role="content">
-        <form id="formAddPlace">
-            <label for="placeName">Where were you?</label>
-            <input id="placeName" type="text" placeholder="Taco Bell"/>
-            <label for="date">When did you go?</label>
-            <input id="date" type="date"/>
-            <label for="friends">Who were you with?</label>
-            <input id="friends" type="text" placeholder="Bill Gates, Mom"/>
-            <input id="cancelPlace" type="button" value="Cancel" onclick="app.clearPlaceForm()"/>
-            <input id="submitPlace" type="button" value="Add" onclick="app.submitPlaceForm()"/>
-        </form>
+        <label for="placeName">Where were you?</label>
+        <input id="placeName" type="text" placeholder="Taco Bell"/>
+        <label for="date">When did you go?</label>
+        <input id="date" type="date" />
+        <label for="txtFriends">Who were you with?</label>
+        <div data-role="controlgroup" data-type="horizontal">
+            <input id="txtFriends" type="text" placeholder="Bill Gates, Mom"/>
+            <a id="addFriend" data-icon="plus" onclick="app.addFriend()"></a>
+        </div>
+        <ul id="listFriends" data-role="listview"></ul>
+        <div data-role="controlgroup" data-type="horizontal">
+            <a id="cancelPlace" data-role="button" onclick="app.clearPlaceForm()">Cancel</a>
+            <a id="submitPlace" data-role="button" onclick="app.submitPlaceForm()">Add</a>
+        </div>
     </div>
 </div>
 <script src="phonegap.js"></script>
